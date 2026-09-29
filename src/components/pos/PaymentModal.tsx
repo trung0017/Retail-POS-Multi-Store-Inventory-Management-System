@@ -19,9 +19,11 @@ import { deductStockForOrder } from '../../store/slices/inventorySlice';
 import { recordTransactionSales } from '../../store/slices/shiftSlice';
 import { Order, PaymentMethod, PaymentDetails } from '../../types';
 import { sounds } from '../../utils/audio';
+import { useTranslation } from '../../i18n/useTranslation';
 
 export const PaymentModal: React.FC = () => {
   const dispatch = useAppDispatch();
+  const { t, language } = useTranslation();
   const isOpen = useAppSelector((state) => state.pos.isPaymentModalOpen);
   const cart = useAppSelector((state) => state.pos.cart);
   const activeBranchId = useAppSelector((state) => state.pos.activeBranchId);
@@ -163,13 +165,13 @@ export const PaymentModal: React.FC = () => {
               <DollarSign className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-base text-slate-100">Process Checkout</h3>
-              <p className="text-xs text-slate-400">Select payment tender and confirm transaction</p>
+              <h3 className="font-bold text-base text-slate-100">{t.processCheckout}</h3>
+              <p className="text-xs text-slate-400">{t.checkoutSubtitle}</p>
             </div>
           </div>
           <button
             onClick={() => dispatch(closePaymentModal())}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -179,7 +181,7 @@ export const PaymentModal: React.FC = () => {
           {/* Total Banner */}
           <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 flex items-baseline justify-between">
             <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider">
-              Total Amount Due
+              {t.totalDue}
             </span>
             <span className="font-mono text-3xl font-extrabold text-emerald-400">
               ${grandTotal.toFixed(2)}
@@ -201,7 +203,7 @@ export const PaymentModal: React.FC = () => {
               }`}
             >
               <Banknote className="w-5 h-5" />
-              <span className="text-xs font-bold">Cash</span>
+              <span className="text-xs font-bold">{t.cash}</span>
             </button>
 
             <button
@@ -214,7 +216,7 @@ export const PaymentModal: React.FC = () => {
               }`}
             >
               <CreditCard className="w-5 h-5" />
-              <span className="text-xs font-bold">Credit/Debit</span>
+              <span className="text-xs font-bold">{t.creditCard}</span>
             </button>
 
             <button
@@ -232,7 +234,7 @@ export const PaymentModal: React.FC = () => {
               }`}
             >
               <Split className="w-5 h-5" />
-              <span className="text-xs font-bold">Split Tender</span>
+              <span className="text-xs font-bold">{t.splitTender}</span>
             </button>
           </div>
 
@@ -240,7 +242,7 @@ export const PaymentModal: React.FC = () => {
           {paymentMode === 'cash' && (
             <div className="space-y-3 p-4 rounded-xl bg-slate-950/60 border border-slate-800">
               <label className="block text-xs font-medium text-slate-300">
-                Amount Tendered ($)
+                {t.amountTendered}
               </label>
               <div className="relative">
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-slate-400">
@@ -265,9 +267,11 @@ export const PaymentModal: React.FC = () => {
                       key={preset}
                       type="button"
                       onClick={() => handleQuickCash(parseFloat(preset.toFixed(2)))}
-                      className="px-3 py-1.5 rounded-lg text-xs font-mono font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors"
+                      className="px-3 py-1.5 rounded-lg text-xs font-mono font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors cursor-pointer"
                     >
-                      {isExact ? `Exact ($${preset.toFixed(2)})` : `$${preset}`}
+                      {isExact
+                        ? `${language === 'vi' ? 'Đúng Số' : 'Exact'} ($${preset.toFixed(2)})`
+                        : `$${preset}`}
                     </button>
                   );
                 })}
@@ -275,13 +279,13 @@ export const PaymentModal: React.FC = () => {
 
               {/* Change calculation */}
               <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between">
-                <span className="text-xs text-slate-400">Change Due</span>
+                <span className="text-xs text-slate-400">{t.changeDue}</span>
                 <span
                   className={`font-mono text-xl font-bold ${
                     isCashSufficient ? 'text-emerald-400' : 'text-rose-400'
                   }`}
                 >
-                  {isCashSufficient ? `$${cashChangeDue.toFixed(2)}` : 'Insufficient Tender'}
+                  {isCashSufficient ? `$${cashChangeDue.toFixed(2)}` : t.insufficientTender}
                 </span>
               </div>
             </div>
@@ -294,16 +298,16 @@ export const PaymentModal: React.FC = () => {
                   <CreditCard className="w-5 h-5 animate-pulse" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-200">Integrated EMV Terminal Ready</h4>
+                  <h4 className="text-xs font-bold text-slate-200">{t.emvTerminalReady}</h4>
                   <p className="text-[11px] text-slate-400">
-                    Insert, Tap, or Swipe card on customer-facing terminal.
+                    {t.emvSubtitle}
                   </p>
                 </div>
               </div>
 
               <div>
                 <label className="block text-[11px] text-slate-400 mb-1">
-                  Terminal Authorization Code / Reference
+                  {t.terminalAuthCode}
                 </label>
                 <input
                   type="text"
@@ -320,7 +324,7 @@ export const PaymentModal: React.FC = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-slate-300 mb-1">
-                    Cash Portion ($)
+                    {t.cashPortion}
                   </label>
                   <input
                     type="number"
@@ -332,7 +336,7 @@ export const PaymentModal: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-slate-300 mb-1">
-                    Card Portion ($)
+                    {t.cardPortion}
                   </label>
                   <input
                     type="number"
@@ -345,7 +349,7 @@ export const PaymentModal: React.FC = () => {
               </div>
 
               <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-xs">
-                <span className="text-slate-400">Allocated / Required</span>
+                <span className="text-slate-400">{t.allocatedRequired}</span>
                 <span
                   className={`font-mono font-bold ${
                     isSplitValid ? 'text-emerald-400' : 'text-amber-400'
@@ -363,9 +367,9 @@ export const PaymentModal: React.FC = () => {
           <button
             type="button"
             onClick={() => dispatch(closePaymentModal())}
-            className="px-4 py-2.5 rounded-xl border border-slate-700 text-xs font-medium text-slate-300 hover:bg-slate-800 transition-colors"
+            className="px-4 py-2.5 rounded-xl border border-slate-700 text-xs font-medium text-slate-300 hover:bg-slate-800 transition-colors cursor-pointer"
           >
-            Cancel
+            {t.cancel}
           </button>
 
           <button
@@ -379,11 +383,11 @@ export const PaymentModal: React.FC = () => {
             className="flex-1 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] disabled:opacity-50 disabled:pointer-events-none text-white font-bold text-xs rounded-xl shadow-lg shadow-emerald-950/60 flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
             {isProcessing ? (
-              <span>Authorizing Transaction...</span>
+              <span>{t.authorizing}</span>
             ) : (
               <>
                 <CheckCircle2 className="w-4 h-4" />
-                <span>Confirm Payment (${grandTotal.toFixed(2)})</span>
+                <span>{t.confirmPayment} (${grandTotal.toFixed(2)})</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}

@@ -17,9 +17,11 @@ import {
   updateProductThreshold,
 } from '../../store/slices/inventorySlice';
 import { Product } from '../../types';
+import { useTranslation } from '../../i18n/useTranslation';
 
 export const InventoryManager: React.FC = () => {
   const dispatch = useAppDispatch();
+  const { t, language } = useTranslation();
   const products = useAppSelector((state) => state.inventory.products);
   const branches = useAppSelector((state) => state.inventory.branches);
   const stock = useAppSelector((state) => state.inventory.stock);
@@ -46,13 +48,11 @@ export const InventoryManager: React.FC = () => {
   const [editingThresholdId, setEditingThresholdId] = useState<string | null>(null);
   const [thresholdVal, setThresholdVal] = useState<number>(10);
 
-  // Helper to get stock for a given product and branch
   const getProductStock = (productId: string, branchId: string) => {
     const item = stock.find((s) => s.productId === productId && s.branchId === branchId);
     return item ? item.quantity : 0;
   };
 
-  // Find all low-stock items across branches
   const lowStockAlerts = React.useMemo(() => {
     const alerts: { product: Product; branchName: string; branchId: string; currentStock: number }[] = [];
     products.forEach((prod) => {
@@ -118,7 +118,7 @@ export const InventoryManager: React.FC = () => {
             quantity: transferQty,
           },
         ],
-        notes: transferNotes || 'Routine store replenishment',
+        notes: transferNotes || (language === 'vi' ? 'Bổ sung định kỳ cho cửa hàng' : 'Routine store replenishment'),
       })
     );
     setIsTransferModalOpen(false);
@@ -136,17 +136,17 @@ export const InventoryManager: React.FC = () => {
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold text-slate-100">Multi-Branch Inventory Hub</h2>
+            <h2 className="text-lg font-bold text-slate-100">{t.inventoryHubTitle}</h2>
             {lowStockAlerts.length > 0 && (
               <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-950 text-amber-300 border border-amber-800">
                 <AlertTriangle className="w-3 h-3 text-amber-400" />
-                <span>{lowStockAlerts.length} Low Stock Alerts</span>
+                <span>
+                  {lowStockAlerts.length} {t.lowStockAlert}
+                </span>
               </span>
             )}
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Monitor SKU levels across retail stores and central warehouse in real time.
-          </p>
+          <p className="text-xs text-slate-400 mt-0.5">{t.inventoryHubSubtitle}</p>
         </div>
 
         <div className="flex items-center gap-2 self-stretch md:self-auto">
@@ -154,35 +154,35 @@ export const InventoryManager: React.FC = () => {
           <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
             <button
               onClick={() => setActiveTab('matrix')}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors cursor-pointer ${
                 activeTab === 'matrix'
                   ? 'bg-indigo-600 text-white'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              Stock Matrix
+              {t.stockMatrix}
             </button>
             <button
               onClick={() => setActiveTab('transfers')}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'transfers'
                   ? 'bg-indigo-600 text-white'
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
               <ArrowRightLeft className="w-3.5 h-3.5" />
-              <span>Transfers ({transfers.length})</span>
+              <span>{t.transfers} ({transfers.length})</span>
             </button>
             <button
               onClick={() => setActiveTab('alerts')}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'alerts'
                   ? 'bg-amber-600 text-white'
                   : 'text-slate-400 hover:text-amber-400'
               }`}
             >
               <AlertTriangle className="w-3.5 h-3.5" />
-              <span>Safety Alerts</span>
+              <span>{t.safetyAlerts}</span>
             </button>
           </div>
 
@@ -191,7 +191,7 @@ export const InventoryManager: React.FC = () => {
             className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs rounded-lg shadow-sm transition-colors cursor-pointer"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>New Transfer</span>
+            <span>{t.newTransfer}</span>
           </button>
         </div>
       </div>
@@ -207,7 +207,7 @@ export const InventoryManager: React.FC = () => {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search products or SKU..."
+                placeholder={language === 'vi' ? 'Tìm sản phẩm hoặc mã SKU...' : 'Search products or SKU...'}
                 className="w-full bg-slate-900 border border-slate-800 rounded-lg pl-9 pr-3 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
               />
             </div>
@@ -219,13 +219,13 @@ export const InventoryManager: React.FC = () => {
                   <button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors whitespace-nowrap ${
+                    className={`px-2.5 py-1 rounded text-[11px] font-medium transition-colors whitespace-nowrap cursor-pointer ${
                       selectedCategory === cat
                         ? 'bg-slate-800 text-indigo-400 border border-indigo-700/60 font-bold'
                         : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
-                    {cat}
+                    {cat === 'All' ? t.all : cat}
                   </button>
                 ))}
               </div>
@@ -237,19 +237,19 @@ export const InventoryManager: React.FC = () => {
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-950/90 text-slate-400 font-semibold border-b border-slate-800 uppercase tracking-wider text-[10px]">
                 <tr>
-                  <th className="py-3 px-4">Product &amp; SKU</th>
-                  <th className="py-3 px-3">Category</th>
-                  <th className="py-3 px-3">Price / Cost</th>
-                  <th className="py-3 px-3 text-center">Safety Threshold</th>
+                  <th className="py-3 px-4">{t.productSku}</th>
+                  <th className="py-3 px-3">{t.category}</th>
+                  <th className="py-3 px-3">{t.priceCost}</th>
+                  <th className="py-3 px-3 text-center">{t.safetyThreshold}</th>
                   {branches.map((b) => (
                     <th key={b.id} className="py-3 px-3 text-center">
                       <div className="font-bold text-slate-200">{b.name}</div>
                       <div className="text-[9px] font-normal text-slate-500">
-                        {b.isWarehouse ? 'Hub' : 'Store'} ({b.code})
+                        {b.isWarehouse ? (language === 'vi' ? 'Tổng Kho' : 'Hub') : (language === 'vi' ? 'Cửa Hàng' : 'Store')} ({b.code})
                       </div>
                     </th>
                   ))}
-                  <th className="py-3 px-3 text-right">Quick Action</th>
+                  <th className="py-3 px-3 text-right">{t.quickAction}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
@@ -268,7 +268,7 @@ export const InventoryManager: React.FC = () => {
                       <td className="py-3 px-3 font-mono">
                         <div className="text-emerald-400 font-bold">${prod.price.toFixed(2)}</div>
                         <div className="text-[10px] text-slate-500">
-                          Cost: ${prod.costPrice.toFixed(2)}
+                          {language === 'vi' ? 'Vốn:' : 'Cost:'} ${prod.costPrice.toFixed(2)}
                         </div>
                       </td>
 
@@ -296,7 +296,7 @@ export const InventoryManager: React.FC = () => {
                               setEditingThresholdId(prod.id);
                               setThresholdVal(prod.minStockThreshold);
                             }}
-                            className="inline-flex items-center gap-1 font-mono text-xs text-slate-300 hover:text-indigo-400 px-2 py-0.5 rounded hover:bg-slate-800"
+                            className="inline-flex items-center gap-1 font-mono text-xs text-slate-300 hover:text-indigo-400 px-2 py-0.5 rounded hover:bg-slate-800 cursor-pointer"
                             title="Click to edit threshold"
                           >
                             <span>{prod.minStockThreshold} {prod.unit}s</span>
@@ -338,9 +338,9 @@ export const InventoryManager: React.FC = () => {
                             setTransferProductId(prod.id);
                             setIsTransferModalOpen(true);
                           }}
-                          className="px-2.5 py-1 bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white rounded text-[11px] font-medium transition-colors"
+                          className="px-2.5 py-1 bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white rounded text-[11px] font-medium transition-colors cursor-pointer"
                         >
-                          Transfer
+                          {t.transferAction}
                         </button>
                       </td>
                     </tr>
@@ -357,9 +357,11 @@ export const InventoryManager: React.FC = () => {
         <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-lg p-4 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-bold text-sm text-slate-100">Inter-Branch Stock Movement Logs</h3>
+              <h3 className="font-bold text-sm text-slate-100">{t.createTransferOrder}</h3>
               <p className="text-xs text-slate-400">
-                Track shipments dispatched between Central Logistics Hub and retail store branches.
+                {language === 'vi'
+                  ? 'Theo dõi lộ trình các chuyến hàng điều chuyển giữa Tổng kho và các chi nhánh.'
+                  : 'Track shipments dispatched between Central Logistics Hub and retail store branches.'}
               </p>
             </div>
             <button
@@ -367,13 +369,15 @@ export const InventoryManager: React.FC = () => {
               className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs rounded-lg transition-colors cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Create Transfer Order</span>
+              <span>{t.newTransfer}</span>
             </button>
           </div>
 
           <div className="space-y-3">
             {transfers.length === 0 ? (
-              <p className="text-xs text-slate-500 text-center py-8">No transfer orders found.</p>
+              <p className="text-xs text-slate-500 text-center py-8">
+                {language === 'vi' ? 'Chưa có lệnh điều chuyển nào.' : 'No transfer orders found.'}
+              </p>
             ) : (
               transfers.map((trf) => {
                 const src = branches.find((b) => b.id === trf.sourceBranchId);
@@ -398,18 +402,20 @@ export const InventoryManager: React.FC = () => {
                               : 'bg-slate-800 text-slate-300'
                           }`}
                         >
-                          {trf.status.replace('_', ' ')}
+                          {trf.status === 'in_transit'
+                            ? (language === 'vi' ? 'ĐANG GIAO HÀNG' : 'IN TRANSIT')
+                            : trf.status === 'completed'
+                            ? (language === 'vi' ? 'ĐÃ HOÀN TẤT' : 'COMPLETED')
+                            : (language === 'vi' ? 'CHỜ DUYỆT' : 'PENDING')}
                         </span>
                       </div>
 
-                      {/* Route */}
                       <div className="flex items-center gap-2 text-xs text-slate-200">
                         <span className="font-semibold">{src?.name || 'Origin'}</span>
                         <ArrowRightLeft className="w-3.5 h-3.5 text-slate-500" />
                         <span className="font-semibold">{tgt?.name || 'Destination'}</span>
                       </div>
 
-                      {/* Items */}
                       <div className="text-[11px] text-slate-400 font-mono">
                         {trf.items.map((i, idx) => (
                           <span key={idx}>
@@ -420,11 +426,12 @@ export const InventoryManager: React.FC = () => {
                       </div>
 
                       {trf.notes && (
-                        <div className="text-[10px] text-slate-500 italic">Note: {trf.notes}</div>
+                        <div className="text-[10px] text-slate-500 italic">
+                          {language === 'vi' ? 'Ghi chú:' : 'Note:'} {trf.notes}
+                        </div>
                       )}
                     </div>
 
-                    {/* Actions */}
                     <div className="flex items-center gap-2">
                       {trf.status === 'pending' && (
                         <button
@@ -433,10 +440,10 @@ export const InventoryManager: React.FC = () => {
                               updateTransferStatus({ transferId: trf.id, status: 'in_transit' })
                             )
                           }
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-medium transition-colors"
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-medium transition-colors cursor-pointer"
                         >
                           <Truck className="w-3.5 h-3.5" />
-                          <span>Dispatch (In Transit)</span>
+                          <span>{t.dispatchInTransit}</span>
                         </button>
                       )}
 
@@ -450,14 +457,14 @@ export const InventoryManager: React.FC = () => {
                           className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
                         >
                           <CheckCircle className="w-3.5 h-3.5" />
-                          <span>Receive &amp; Restock</span>
+                          <span>{t.receiveRestock}</span>
                         </button>
                       )}
 
                       {trf.status === 'completed' && (
                         <span className="text-[11px] text-emerald-400 font-mono flex items-center gap-1">
                           <CheckCircle className="w-3.5 h-3.5" />
-                          <span>Inventory Updated</span>
+                          <span>{language === 'vi' ? 'Đã nhập kho thành công' : 'Inventory Updated'}</span>
                         </span>
                       )}
                     </div>
@@ -475,10 +482,10 @@ export const InventoryManager: React.FC = () => {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-bold text-sm text-slate-100">
-                Critical Safety Stock Threshold Alerts
+                {t.criticalThresholdTitle}
               </h3>
               <p className="text-xs text-slate-400">
-                Immediate replenishment required to prevent stockout in high-velocity retail stores.
+                {t.criticalThresholdSubtitle}
               </p>
             </div>
           </div>
@@ -486,7 +493,9 @@ export const InventoryManager: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {lowStockAlerts.length === 0 ? (
               <div className="col-span-2 py-8 text-center text-xs text-slate-400">
-                No items are currently below safety threshold! Inventory health is optimal.
+                {language === 'vi'
+                  ? 'Tất cả các mặt hàng đều ở mức an toàn!'
+                  : 'No items are currently below safety threshold! Inventory health is optimal.'}
               </div>
             ) : (
               lowStockAlerts.map((alert, idx) => (
@@ -500,15 +509,15 @@ export const InventoryManager: React.FC = () => {
                       <h4 className="font-bold text-xs text-slate-100">{alert.product.name}</h4>
                     </div>
                     <div className="text-[11px] text-slate-400 font-mono">
-                      Location: <span className="text-slate-200">{alert.branchName}</span>
+                      {language === 'vi' ? 'Vị trí:' : 'Location:'} <span className="text-slate-200">{alert.branchName}</span>
                     </div>
                     <div className="flex items-center gap-2 text-xs font-mono">
                       <span className="text-rose-400 font-bold">
-                        Current: {alert.currentStock} {alert.product.unit}s
+                        {language === 'vi' ? 'Tồn hiện tại:' : 'Current:'} {alert.currentStock} {alert.product.unit}s
                       </span>
                       <span className="text-slate-600">|</span>
                       <span className="text-slate-400">
-                        Min Safety: {alert.product.minStockThreshold} {alert.product.unit}s
+                        {language === 'vi' ? 'Mức tối thiểu:' : 'Min Safety:'} {alert.product.minStockThreshold} {alert.product.unit}s
                       </span>
                     </div>
                   </div>
@@ -523,7 +532,7 @@ export const InventoryManager: React.FC = () => {
                     }}
                     className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold whitespace-nowrap cursor-pointer transition-colors"
                   >
-                    Transfer from Hub
+                    {t.transferFromHub}
                   </button>
                 </div>
               ))
@@ -536,16 +545,15 @@ export const InventoryManager: React.FC = () => {
       {isAdjustModalOpen && adjustProduct && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-md p-5 shadow-2xl space-y-4">
-            <h3 className="font-bold text-base text-slate-100">Manual Stock Adjustment</h3>
+            <h3 className="font-bold text-base text-slate-100">{t.manualStockAdjustment}</h3>
             <p className="text-xs text-slate-400">
-              Audit &amp; correct physical count for {adjustProduct.name} at{' '}
-              {branches.find((b) => b.id === adjustBranchId)?.name}.
+              {adjustProduct.name} @ {branches.find((b) => b.id === adjustBranchId)?.name}.
             </p>
 
             <form onSubmit={handleSaveAdjustment} className="space-y-4">
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">
-                  New Quantity on Hand ({adjustProduct.unit}s)
+                  {t.newQuantityOnHand} ({adjustProduct.unit}s)
                 </label>
                 <input
                   type="number"
@@ -561,15 +569,15 @@ export const InventoryManager: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsAdjustModalOpen(false)}
-                  className="px-3.5 py-2 rounded-lg border border-slate-700 text-xs font-medium text-slate-300 hover:bg-slate-800 transition-colors"
+                  className="px-3.5 py-2 rounded-lg border border-slate-700 text-xs font-medium text-slate-300 hover:bg-slate-800 transition-colors cursor-pointer"
                 >
-                  Cancel
+                  {t.cancel}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
                 >
-                  Save Adjustment
+                  {t.save}
                 </button>
               </div>
             </form>
@@ -581,16 +589,18 @@ export const InventoryManager: React.FC = () => {
       {isTransferModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-lg p-5 shadow-2xl space-y-4">
-            <h3 className="font-bold text-base text-slate-100">Create Stock Transfer Order</h3>
+            <h3 className="font-bold text-base text-slate-100">{t.createTransferOrder}</h3>
             <p className="text-xs text-slate-400">
-              Dispatch inventory between warehouse hub and retail branches.
+              {language === 'vi'
+                ? 'Điều chuyển hàng giữa tổng kho và các chi nhánh bán lẻ.'
+                : 'Dispatch inventory between warehouse hub and retail branches.'}
             </p>
 
             <form onSubmit={handleCreateTransfer} className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-slate-300 mb-1">
-                    Source Branch
+                    {t.sourceBranch}
                   </label>
                   <select
                     value={transferSource}
@@ -607,7 +617,7 @@ export const InventoryManager: React.FC = () => {
 
                 <div>
                   <label className="block text-xs font-medium text-slate-300 mb-1">
-                    Target Branch
+                    {t.targetBranch}
                   </label>
                   <select
                     value={transferTarget}
@@ -627,7 +637,7 @@ export const InventoryManager: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Product to Transfer
+                  {t.productToTransfer}
                 </label>
                 <select
                   value={transferProductId}
@@ -643,7 +653,7 @@ export const InventoryManager: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Quantity</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">{t.quantity}</label>
                 <input
                   type="number"
                   min="1"
@@ -654,12 +664,12 @@ export const InventoryManager: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Transfer Note</label>
+                <label className="block text-xs font-medium text-slate-300 mb-1">{t.transferNote}</label>
                 <input
                   type="text"
                   value={transferNotes}
                   onChange={(e) => setTransferNotes(e.target.value)}
-                  placeholder="e.g. Replenishment for weekend rush"
+                  placeholder={language === 'vi' ? 'Ví dụ: Hàng phục vụ cao điểm cuối tuần' : 'e.g. Replenishment for weekend rush'}
                   className="w-full bg-slate-950 border border-slate-700 text-slate-100 text-xs px-3 py-2 rounded-lg focus:outline-none focus:border-indigo-500"
                 />
               </div>
@@ -668,15 +678,15 @@ export const InventoryManager: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsTransferModalOpen(false)}
-                  className="px-3.5 py-2 rounded-lg border border-slate-700 text-xs font-medium text-slate-300 hover:bg-slate-800 transition-colors"
+                  className="px-3.5 py-2 rounded-lg border border-slate-700 text-xs font-medium text-slate-300 hover:bg-slate-800 transition-colors cursor-pointer"
                 >
-                  Cancel
+                  {t.cancel}
                 </button>
                 <button
                   type="submit"
                   className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
                 >
-                  Create Transfer
+                  {t.createTransferOrder}
                 </button>
               </div>
             </form>

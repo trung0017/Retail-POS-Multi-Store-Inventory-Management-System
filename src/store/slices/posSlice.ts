@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { CartItem, Product, Order } from '../../types';
+import { Language } from '../../i18n/translations';
 
 interface PosState {
   activeBranchId: string;
@@ -13,6 +14,7 @@ interface PosState {
   recentCompletedOrder: Order | null;
   activeCategory: string;
   searchQuery: string;
+  language: Language;
 }
 
 const initialState: PosState = {
@@ -27,12 +29,19 @@ const initialState: PosState = {
   recentCompletedOrder: null,
   activeCategory: 'All Products',
   searchQuery: '',
+  language: 'vi',
 };
 
 export const posSlice = createSlice({
   name: 'pos',
   initialState,
   reducers: {
+    setLanguage: (state, action: PayloadAction<Language>) => {
+      state.language = action.payload;
+    },
+    toggleLanguage: (state) => {
+      state.language = state.language === 'en' ? 'vi' : 'en';
+    },
     setActiveBranch: (state, action: PayloadAction<string>) => {
       state.activeBranchId = action.payload;
     },
@@ -122,6 +131,8 @@ export const posSlice = createSlice({
 });
 
 export const {
+  setLanguage,
+  toggleLanguage,
   setActiveBranch,
   setCurrentCashier,
   setActiveCategory,

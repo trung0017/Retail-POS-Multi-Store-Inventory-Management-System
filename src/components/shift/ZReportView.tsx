@@ -14,9 +14,11 @@ import {
   closeShift,
   startNewShift,
 } from '../../store/slices/shiftSlice';
+import { useTranslation } from '../../i18n/useTranslation';
 
 export const ZReportView: React.FC = () => {
   const dispatch = useAppDispatch();
+  const { t, language } = useTranslation();
   const currentShift = useAppSelector((state) => state.shift.currentShift);
   const shiftHistory = useAppSelector((state) => state.shift.shiftHistory);
   const branches = useAppSelector((state) => state.inventory.branches);
@@ -35,7 +37,6 @@ export const ZReportView: React.FC = () => {
 
   const branch = branches.find((b) => b.id === currentShift.branchId) || branches[0];
 
-  // Expected Cash calculation
   const expectedCashInDrawer =
     currentShift.openingFloat + currentShift.cashSales - currentShift.cashDrop;
 
@@ -73,21 +74,21 @@ export const ZReportView: React.FC = () => {
 
   const handleExportCSV = () => {
     const rows = [
-      ['Z-REPORT RECONCILIATION & AUDIT EXPORT'],
-      ['Branch', branch.name],
-      ['Cashier', currentShift.cashierName],
-      ['Shift Opened At', new Date(currentShift.openedAt).toLocaleString()],
-      ['Shift Closed At', currentShift.closedAt ? new Date(currentShift.closedAt).toLocaleString() : 'ACTIVE'],
-      ['Total Orders', currentShift.orderCount.toString()],
-      ['Opening Float ($)', currentShift.openingFloat.toFixed(2)],
-      ['Gross Cash Sales ($)', currentShift.cashSales.toFixed(2)],
-      ['Gross Card Sales ($)', currentShift.cardSales.toFixed(2)],
-      ['Total Gross Revenue ($)', currentShift.totalSales.toFixed(2)],
-      ['Cash Drops to Safe ($)', currentShift.cashDrop.toFixed(2)],
-      ['System Expected Cash ($)', expectedCashInDrawer.toFixed(2)],
-      ['Actual Counted Cash ($)', (currentShift.actualCountedCash ?? 0).toFixed(2)],
-      ['Discrepancy ($)', (currentShift.discrepancy ?? 0).toFixed(2)],
-      ['Notes', currentShift.notes || 'None'],
+      [language === 'vi' ? 'BÁO CÁO CA & ĐỐI SOÁT TÀI CHÍNH' : 'Z-REPORT RECONCILIATION & AUDIT EXPORT'],
+      [language === 'vi' ? 'Chi Nhánh' : 'Branch', branch.name],
+      [language === 'vi' ? 'Thu Ngân' : 'Cashier', currentShift.cashierName],
+      [language === 'vi' ? 'Mở Ca Lúc' : 'Shift Opened At', new Date(currentShift.openedAt).toLocaleString()],
+      [language === 'vi' ? 'Đóng Ca Lúc' : 'Shift Closed At', currentShift.closedAt ? new Date(currentShift.closedAt).toLocaleString() : 'ACTIVE'],
+      [language === 'vi' ? 'Tổng Số Đơn' : 'Total Orders', currentShift.orderCount.toString()],
+      [language === 'vi' ? 'Tiền Vốn Đầu Ca ($)' : 'Opening Float ($)', currentShift.openingFloat.toFixed(2)],
+      [language === 'vi' ? 'Doanh Thu Tiền Mặt ($)' : 'Gross Cash Sales ($)', currentShift.cashSales.toFixed(2)],
+      [language === 'vi' ? 'Doanh Thu Qua Thẻ ($)' : 'Gross Card Sales ($)', currentShift.cardSales.toFixed(2)],
+      [language === 'vi' ? 'Tổng Doanh Thu ($)' : 'Total Gross Revenue ($)', currentShift.totalSales.toFixed(2)],
+      [language === 'vi' ? 'Rút Tiền Về Két ($)' : 'Cash Drops to Safe ($)', currentShift.cashDrop.toFixed(2)],
+      [language === 'vi' ? 'Tiền Ngăn Kéo Tính Toán ($)' : 'System Expected Cash ($)', expectedCashInDrawer.toFixed(2)],
+      [language === 'vi' ? 'Tiền Đếm Thực Tế ($)' : 'Actual Counted Cash ($)', (currentShift.actualCountedCash ?? 0).toFixed(2)],
+      [language === 'vi' ? 'Chênh Lệch ($)' : 'Discrepancy ($)', (currentShift.discrepancy ?? 0).toFixed(2)],
+      [language === 'vi' ? 'Ghi Chú' : 'Notes', currentShift.notes || 'None'],
     ];
 
     const csvContent =
@@ -113,7 +114,7 @@ export const ZReportView: React.FC = () => {
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold text-slate-100">Daily Z-Report &amp; Reconciliation</h2>
+            <h2 className="text-lg font-bold text-slate-100">{t.zReportTitle}</h2>
             <span
               className={`flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
                 currentShift.isClosed
@@ -122,29 +123,27 @@ export const ZReportView: React.FC = () => {
               }`}
             >
               {currentShift.isClosed ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
-              <span>{currentShift.isClosed ? 'Shift Closed (Audited)' : 'Active Shift Open'}</span>
+              <span>{currentShift.isClosed ? t.shiftClosedAudited : t.activeShiftOpen}</span>
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">
-            End-of-day register audit, cash drop logging, and payment reconciliation.
-          </p>
+          <p className="text-xs text-slate-400 mt-0.5">{t.zReportSubtitle}</p>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 transition-colors cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
-            <span>Export CSV</span>
+            <span>{t.exportCSV}</span>
           </button>
 
           <button
             onClick={handlePrintZReport}
-            className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 transition-colors cursor-pointer"
           >
             <Printer className="w-3.5 h-3.5" />
-            <span>Print Report</span>
+            <span>{t.printReport}</span>
           </button>
 
           {!currentShift.isClosed ? (
@@ -156,7 +155,7 @@ export const ZReportView: React.FC = () => {
               className="flex items-center gap-1.5 px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
             >
               <Lock className="w-3.5 h-3.5" />
-              <span>Close Shift &amp; Reconcile</span>
+              <span>{t.closeShiftReconcile}</span>
             </button>
           ) : (
             <button
@@ -164,7 +163,7 @@ export const ZReportView: React.FC = () => {
               className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
             >
               <PlusCircle className="w-3.5 h-3.5" />
-              <span>Open New Shift</span>
+              <span>{t.openNewShift}</span>
             </button>
           )}
         </div>
@@ -175,27 +174,27 @@ export const ZReportView: React.FC = () => {
         {/* Card 1: Gross Sales */}
         <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 shadow-md">
           <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-            Total Revenue
+            {t.totalRevenue}
           </span>
           <div className="font-mono text-2xl font-bold text-white mt-1">
             ${currentShift.totalSales.toFixed(2)}
           </div>
           <div className="text-[11px] text-slate-400 mt-1">
-            {currentShift.orderCount} transactions processed
+            {currentShift.orderCount} {t.transactionsProcessed}
           </div>
         </div>
 
         {/* Card 2: Cash vs Card */}
         <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 shadow-md">
           <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-            Tender Split
+            {t.tenderSplit}
           </span>
           <div className="flex items-center justify-between mt-1 text-xs font-mono">
-            <span className="text-slate-300">Cash Sales:</span>
+            <span className="text-slate-300">{t.cashSales}:</span>
             <span className="text-emerald-400 font-bold">${currentShift.cashSales.toFixed(2)}</span>
           </div>
           <div className="flex items-center justify-between text-xs font-mono mt-0.5">
-            <span className="text-slate-300">Card Sales:</span>
+            <span className="text-slate-300">{t.cardSales}:</span>
             <span className="text-indigo-400 font-bold">${currentShift.cardSales.toFixed(2)}</span>
           </div>
         </div>
@@ -204,23 +203,23 @@ export const ZReportView: React.FC = () => {
         <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 shadow-md">
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-              Drawer Float &amp; Drops
+              {t.drawerFloatDrops}
             </span>
             {!currentShift.isClosed && (
               <button
                 onClick={() => setIsCashDropModalOpen(true)}
                 className="text-[10px] text-indigo-400 hover:underline cursor-pointer"
               >
-                + Drop to Safe
+                {t.dropToSafe}
               </button>
             )}
           </div>
           <div className="flex items-center justify-between mt-1 text-xs font-mono">
-            <span className="text-slate-300">Opening Float:</span>
+            <span className="text-slate-300">{t.openingFloat}:</span>
             <span className="text-slate-100">${currentShift.openingFloat.toFixed(2)}</span>
           </div>
           <div className="flex items-center justify-between text-xs font-mono mt-0.5">
-            <span className="text-slate-300">Cash Drops:</span>
+            <span className="text-slate-300">{t.cashDrops}:</span>
             <span className="text-amber-400">-${currentShift.cashDrop.toFixed(2)}</span>
           </div>
         </div>
@@ -234,14 +233,14 @@ export const ZReportView: React.FC = () => {
           }`}
         >
           <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
-            Drawer Expected Total
+            {t.drawerExpectedTotal}
           </span>
           <div className="font-mono text-2xl font-bold text-emerald-400 mt-1">
             ${expectedCashInDrawer.toFixed(2)}
           </div>
           {currentShift.isClosed ? (
             <div className="text-[11px] font-mono mt-1">
-              Counted: ${(currentShift.actualCountedCash ?? 0).toFixed(2)} (
+              {language === 'vi' ? 'Đếm:' : 'Counted:'} ${(currentShift.actualCountedCash ?? 0).toFixed(2)} (
               <span
                 className={
                   (currentShift.discrepancy ?? 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'
@@ -253,7 +252,7 @@ export const ZReportView: React.FC = () => {
               )
             </div>
           ) : (
-            <div className="text-[11px] text-slate-500 mt-1">Drawer in session</div>
+            <div className="text-[11px] text-slate-500 mt-1">{t.drawerInSession}</div>
           )}
         </div>
       </div>
@@ -263,7 +262,7 @@ export const ZReportView: React.FC = () => {
         <div className="border-b border-slate-800 pb-4 flex items-center justify-between">
           <div>
             <span className="font-mono text-xs uppercase text-indigo-400 tracking-wider">
-              OFFICIAL FISCAL Z-REPORT
+              {t.officialZReport}
             </span>
             <h3 className="text-lg font-bold text-white mt-0.5">{branch.name}</h3>
             <p className="text-xs text-slate-400 font-mono">
@@ -272,53 +271,53 @@ export const ZReportView: React.FC = () => {
           </div>
 
           <div className="text-right text-xs text-slate-400 font-mono space-y-0.5">
-            <div>Opened: {new Date(currentShift.openedAt).toLocaleTimeString()}</div>
+            <div>{language === 'vi' ? 'Mở ca:' : 'Opened:'} {new Date(currentShift.openedAt).toLocaleTimeString()}</div>
             <div>
-              Closed:{' '}
+              {language === 'vi' ? 'Đóng ca:' : 'Closed:'}{' '}
               {currentShift.closedAt
                 ? new Date(currentShift.closedAt).toLocaleTimeString()
-                : 'PENDING'}
+                : (language === 'vi' ? 'ĐANG CHẠY' : 'PENDING')}
             </div>
-            <div>Cashier: {currentShift.cashierName}</div>
+            <div>{t.cashier}: {currentShift.cashierName}</div>
           </div>
         </div>
 
         {/* Detailed Financial Ledger */}
         <div className="space-y-2 text-xs">
           <div className="flex justify-between py-1.5 border-b border-slate-800/80">
-            <span className="text-slate-300 font-medium">Opening Cash Float</span>
+            <span className="text-slate-300 font-medium">{t.openingCashFloat}</span>
             <span className="font-mono text-slate-100">${currentShift.openingFloat.toFixed(2)}</span>
           </div>
 
           <div className="flex justify-between py-1.5 border-b border-slate-800/80">
-            <span className="text-slate-300 font-medium">(+) Gross Cash Tender Collected</span>
+            <span className="text-slate-300 font-medium">{t.grossCashCollected}</span>
             <span className="font-mono text-emerald-400">+${currentShift.cashSales.toFixed(2)}</span>
           </div>
 
           <div className="flex justify-between py-1.5 border-b border-slate-800/80">
-            <span className="text-slate-300 font-medium">(-) Mid-shift Drops to Safe</span>
+            <span className="text-slate-300 font-medium">{t.midshiftDrops}</span>
             <span className="font-mono text-amber-400">-${currentShift.cashDrop.toFixed(2)}</span>
           </div>
 
           <div className="flex justify-between py-2 border-b border-slate-700 font-bold bg-slate-950/40 px-2 rounded">
-            <span className="text-slate-100">(=) System Expected Physical Cash in Drawer</span>
+            <span className="text-slate-100">{t.systemExpectedCash}</span>
             <span className="font-mono text-emerald-400">${expectedCashInDrawer.toFixed(2)}</span>
           </div>
 
           <div className="flex justify-between py-1.5 border-b border-slate-800/80">
-            <span className="text-slate-300 font-medium">(+) Integrated Credit / Debit Sales</span>
+            <span className="text-slate-300 font-medium">{t.integratedCardSales}</span>
             <span className="font-mono text-indigo-400">${currentShift.cardSales.toFixed(2)}</span>
           </div>
 
           <div className="flex justify-between py-1.5 border-b border-slate-800/80">
-            <span className="text-slate-300 font-medium">Total Fiscal Revenue (All Tenders)</span>
+            <span className="text-slate-300 font-medium">{t.totalFiscalRevenue}</span>
             <span className="font-mono font-bold text-white">${currentShift.totalSales.toFixed(2)}</span>
           </div>
 
           {currentShift.isClosed && (
             <div className="pt-2 space-y-2">
               <div className="flex justify-between py-1.5 border-b border-slate-800">
-                <span className="text-slate-300 font-medium">Actual Physical Cash Counted</span>
+                <span className="text-slate-300 font-medium">{t.actualPhysicalCash}</span>
                 <span className="font-mono font-bold text-white">
                   ${(currentShift.actualCountedCash ?? 0).toFixed(2)}
                 </span>
@@ -333,10 +332,10 @@ export const ZReportView: React.FC = () => {
               >
                 <span>
                   {(currentShift.discrepancy ?? 0) === 0
-                    ? 'Drawer Balanced (Zero Discrepancy)'
+                    ? t.drawerBalanced
                     : (currentShift.discrepancy ?? 0) > 0
-                    ? 'Drawer Over (Excess Tender)'
-                    : 'Drawer Short (Deficit)'}
+                    ? t.drawerOver
+                    : t.drawerShort}
                 </span>
                 <span className="font-mono">
                   {(currentShift.discrepancy ?? 0) >= 0 ? '+' : ''}
@@ -349,7 +348,7 @@ export const ZReportView: React.FC = () => {
 
         {currentShift.notes && (
           <div className="p-3 rounded-lg bg-slate-950 border border-slate-800 text-xs">
-            <span className="text-slate-400 block font-semibold">Audit Notes:</span>
+            <span className="text-slate-400 block font-semibold">{t.reconciliationNotes}:</span>
             <p className="text-slate-200 mt-1 italic">{currentShift.notes}</p>
           </div>
         )}
@@ -360,7 +359,9 @@ export const ZReportView: React.FC = () => {
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-3 max-w-3xl mx-auto">
           <div className="flex items-center gap-2">
             <History className="w-4 h-4 text-indigo-400" />
-            <h4 className="font-bold text-sm text-slate-100">Shift Reconciliation Archive</h4>
+            <h4 className="font-bold text-sm text-slate-100">
+              {language === 'vi' ? 'Lịch Sử Lưu Trữ Ca Đã Đóng' : 'Shift Reconciliation Archive'}
+            </h4>
           </div>
           <div className="space-y-2">
             {shiftHistory.map((sh) => (
@@ -371,13 +372,13 @@ export const ZReportView: React.FC = () => {
                 <div>
                   <div className="font-mono font-bold text-slate-200">{sh.id}</div>
                   <div className="text-[10px] text-slate-500 font-mono">
-                    Closed: {sh.closedAt ? new Date(sh.closedAt).toLocaleString() : 'N/A'} · Cashier: {sh.cashierName}
+                    {language === 'vi' ? 'Đóng:' : 'Closed:'} {sh.closedAt ? new Date(sh.closedAt).toLocaleString() : 'N/A'} · {t.cashier}: {sh.cashierName}
                   </div>
                 </div>
                 <div className="text-right font-mono">
                   <div className="font-bold text-emerald-400">${sh.totalSales.toFixed(2)}</div>
                   <div className="text-[10px] text-slate-400">
-                    Discrepancy: ${(sh.discrepancy ?? 0).toFixed(2)}
+                    {language === 'vi' ? 'Chênh lệch:' : 'Discrepancy:'} ${(sh.discrepancy ?? 0).toFixed(2)}
                   </div>
                 </div>
               </div>
@@ -392,16 +393,18 @@ export const ZReportView: React.FC = () => {
           <div className="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-sm p-5 shadow-2xl space-y-4">
             <div className="flex items-center gap-2">
               <ArrowDownCircle className="w-5 h-5 text-amber-400" />
-              <h3 className="font-bold text-base text-slate-100">Record Cash Drop</h3>
+              <h3 className="font-bold text-base text-slate-100">{t.recordCashDrop}</h3>
             </div>
             <p className="text-xs text-slate-400">
-              Transfer excess currency from register drawer to the back-office drop safe.
+              {language === 'vi'
+                ? 'Chuyển bớt lượng tiền mặt dư thừa từ ngăn kéo vào két sắt an toàn.'
+                : 'Transfer excess currency from register drawer to the back-office drop safe.'}
             </p>
 
             <form onSubmit={handleCashDrop} className="space-y-4">
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Drop Amount ($)
+                  {t.dropAmount}
                 </label>
                 <input
                   type="number"
@@ -420,15 +423,15 @@ export const ZReportView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsCashDropModalOpen(false)}
-                  className="px-3.5 py-2 rounded-lg border border-slate-700 text-xs font-medium text-slate-300 hover:bg-slate-800"
+                  className="px-3.5 py-2 rounded-lg border border-slate-700 text-xs font-medium text-slate-300 hover:bg-slate-800 cursor-pointer"
                 >
-                  Cancel
+                  {t.cancel}
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-lg shadow-sm"
+                  className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer"
                 >
-                  Confirm Cash Drop
+                  {t.confirmCashDrop}
                 </button>
               </div>
             </form>
@@ -442,15 +445,15 @@ export const ZReportView: React.FC = () => {
           <div className="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-md p-5 shadow-2xl space-y-4">
             <div className="flex items-center gap-2">
               <Lock className="w-5 h-5 text-rose-400" />
-              <h3 className="font-bold text-base text-slate-100">End Shift &amp; Close Register</h3>
+              <h3 className="font-bold text-base text-slate-100">{t.endShiftTitle}</h3>
             </div>
             <p className="text-xs text-slate-400">
-              Count all bills and coins currently in the cash drawer to complete reconciliation.
+              {t.endShiftSubtitle}
             </p>
 
             <form onSubmit={handleConfirmCloseShift} className="space-y-4">
               <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 text-xs flex justify-between">
-                <span className="text-slate-400">System Expected Drawer Cash:</span>
+                <span className="text-slate-400">{t.systemExpectedCash}:</span>
                 <span className="font-mono font-bold text-emerald-400">
                   ${expectedCashInDrawer.toFixed(2)}
                 </span>
@@ -458,7 +461,7 @@ export const ZReportView: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Actual Physical Cash Counted ($)
+                  {t.actualPhysicalCash} ($)
                 </label>
                 <input
                   type="number"
@@ -472,13 +475,13 @@ export const ZReportView: React.FC = () => {
 
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Reconciliation Notes
+                  {t.reconciliationNotes}
                 </label>
                 <textarea
                   rows={2}
                   value={closingNotes}
                   onChange={(e) => setClosingNotes(e.target.value)}
-                  placeholder="Explain any drawer discrepancy, coupon variances, or manager approval..."
+                  placeholder={language === 'vi' ? 'Giải thích lý do chênh lệch thừa/thiếu, tiền tip...' : 'Explain any drawer discrepancy, coupon variances, or manager approval...'}
                   className="w-full bg-slate-950 border border-slate-700 text-slate-100 text-xs px-3 py-2 rounded-lg focus:outline-none focus:border-indigo-500"
                 />
               </div>
@@ -487,15 +490,15 @@ export const ZReportView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsCloseShiftModalOpen(false)}
-                  className="px-3.5 py-2 rounded-lg border border-slate-700 text-xs font-medium text-slate-300 hover:bg-slate-800"
+                  className="px-3.5 py-2 rounded-lg border border-slate-700 text-xs font-medium text-slate-300 hover:bg-slate-800 cursor-pointer"
                 >
-                  Cancel
+                  {t.cancel}
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-lg shadow-sm"
+                  className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer"
                 >
-                  Finalize &amp; Close Register
+                  {t.finalizeClose}
                 </button>
               </div>
             </form>
@@ -509,16 +512,18 @@ export const ZReportView: React.FC = () => {
           <div className="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-sm p-5 shadow-2xl space-y-4">
             <div className="flex items-center gap-2">
               <PlusCircle className="w-5 h-5 text-emerald-400" />
-              <h3 className="font-bold text-base text-slate-100">Start New Shift Session</h3>
+              <h3 className="font-bold text-base text-slate-100">{t.startNewShiftTitle}</h3>
             </div>
             <p className="text-xs text-slate-400">
-              Input opening cash float placed into the register drawer for change.
+              {language === 'vi'
+                ? 'Nhập lượng tiền lẻ đầu ca cấp vào ngăn kéo để chuẩn bị trả lại khách.'
+                : 'Input opening cash float placed into the register drawer for change.'}
             </p>
 
             <form onSubmit={handleStartShift} className="space-y-4">
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Opening Float ($)
+                  {t.openingFloat} ($)
                 </label>
                 <input
                   type="number"
@@ -534,15 +539,15 @@ export const ZReportView: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsNewShiftModalOpen(false)}
-                  className="px-3.5 py-2 rounded-lg border border-slate-700 text-xs font-medium text-slate-300 hover:bg-slate-800"
+                  className="px-3.5 py-2 rounded-lg border border-slate-700 text-xs font-medium text-slate-300 hover:bg-slate-800 cursor-pointer"
                 >
-                  Cancel
+                  {t.cancel}
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow-sm"
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow-sm cursor-pointer"
                 >
-                  Open Drawer
+                  {t.openDrawer}
                 </button>
               </div>
             </form>

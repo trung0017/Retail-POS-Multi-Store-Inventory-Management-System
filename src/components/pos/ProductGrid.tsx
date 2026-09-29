@@ -4,9 +4,11 @@ import { useAppDispatch, useAppSelector } from '../../store';
 import { addToCart, setActiveCategory, setSearchQuery } from '../../store/slices/posSlice';
 import { SEED_CATEGORIES } from '../../data/seedData';
 import { sounds } from '../../utils/audio';
+import { useTranslation } from '../../i18n/useTranslation';
 
 export const ProductGrid: React.FC = () => {
   const dispatch = useAppDispatch();
+  const { t, language } = useTranslation();
   const products = useAppSelector((state) => state.inventory.products);
   const stock = useAppSelector((state) => state.inventory.stock);
   const activeBranchId = useAppSelector((state) => state.pos.activeBranchId);
@@ -14,6 +16,22 @@ export const ProductGrid: React.FC = () => {
   const searchQuery = useAppSelector((state) => state.pos.searchQuery);
 
   const [lastAddedId, setLastAddedId] = useState<string | null>(null);
+
+  // Category translation mapping
+  const categoryName = (cat: string) => {
+    if (language !== 'vi') return cat;
+    switch (cat) {
+      case 'All Products': return 'Tất Cả Sản Phẩm';
+      case 'Beverages': return 'Đồ Uống & Nước Giải Khát';
+      case 'Snacks & Confectionery': return 'Bánh Kẹo & Ăn Vặt';
+      case 'Dairy & Fresh': return 'Sữa & Thực Phẩm Tươi';
+      case 'Bakery & Deli': return 'Bánh Mì & Deli';
+      case 'Pantry & Staples': return 'Gia Vị & Đồ Khô';
+      case 'Personal Care': return 'Chăm Sóc Cá Nhân';
+      case 'Household': return 'Hàng Tiêu Dùng Gia Đình';
+      default: return cat;
+    }
+  };
 
   // Filter products by category and search text
   const filteredProducts = useMemo(() => {
@@ -49,15 +67,15 @@ export const ProductGrid: React.FC = () => {
             type="text"
             value={searchQuery}
             onChange={(e) => dispatch(setSearchQuery(e.target.value))}
-            placeholder="Search items by name, barcode, or category..."
+            placeholder={t.searchPlaceholder}
             className="w-full bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-500 pl-10 pr-4 py-2 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
           />
           {searchQuery && (
             <button
               onClick={() => dispatch(setSearchQuery(''))}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-200"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-200 cursor-pointer"
             >
-              Clear
+              {t.clear}
             </button>
           )}
         </div>
@@ -76,7 +94,7 @@ export const ProductGrid: React.FC = () => {
                     : 'bg-slate-950 text-slate-400 hover:text-slate-200 hover:bg-slate-800/80 border border-slate-800'
                 }`}
               >
-                {cat}
+                {categoryName(cat)}
               </button>
             );
           })}
@@ -88,7 +106,9 @@ export const ProductGrid: React.FC = () => {
         {filteredProducts.length === 0 ? (
           <div className="h-64 flex flex-col items-center justify-center text-slate-500 gap-2">
             <Package className="w-10 h-10 text-slate-600 stroke-1" />
-            <p className="text-sm">No items found matching &quot;{searchQuery}&quot;</p>
+            <p className="text-sm">
+              {t.noItemsFound} &quot;{searchQuery}&quot;
+            </p>
             <button
               onClick={() => {
                 dispatch(setSearchQuery(''));
@@ -96,13 +116,12 @@ export const ProductGrid: React.FC = () => {
               }}
               className="text-xs text-indigo-400 hover:underline mt-1 cursor-pointer"
             >
-              Reset filters
+              {t.resetFilters}
             </button>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2.5">
             {filteredProducts.map((prod) => {
-              // Get current branch stock
               const stockRecord = stock.find(
                 (s) => s.branchId === activeBranchId && s.productId === prod.id
               );
@@ -125,7 +144,7 @@ export const ProductGrid: React.FC = () => {
                 >
                   {/* Category subtle label & Stock level */}
                   <div className="flex items-start justify-between gap-1 w-full text-[10px] text-slate-400 mb-1">
-                    <span className="truncate">{prod.category}</span>
+                    <span className="truncate">{categoryName(prod.category)}</span>
                     <div
                       className={`flex items-center gap-1 font-mono font-medium px-1.5 py-0.5 rounded text-[10px] ${
                         isOutOfStock
@@ -157,7 +176,7 @@ export const ProductGrid: React.FC = () => {
                         ${prod.price.toFixed(2)}
                       </span>
                       <span className="text-[10px] text-slate-500 block">
-                        +{(prod.taxRate * 100).toFixed(0)}% tax
+                        +{(prod.taxRate * 100).toFixed(0)}% {t.tax}
                       </span>
                     </div>
 
@@ -179,7 +198,7 @@ export const ProductGrid: React.FC = () => {
                   {/* Low stock badge */}
                   {isLowStock && !isOutOfStock && (
                     <div className="absolute top-1 left-1.5 flex items-center gap-1 text-[9px] font-bold text-amber-400 uppercase tracking-wider">
-                      <span>Low Stock Alert</span>
+                      <span>{t.lowStockAlert}</span>
                     </div>
                   )}
                 </button>

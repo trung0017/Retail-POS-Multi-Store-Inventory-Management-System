@@ -10,8 +10,10 @@ import {
   Banknote,
 } from 'lucide-react';
 import { useAppSelector } from '../../store';
+import { useTranslation } from '../../i18n/useTranslation';
 
 export const AnalyticsView: React.FC = () => {
+  const { t, language } = useTranslation();
   const orders = useAppSelector((state) => state.orders.orders);
   const products = useAppSelector((state) => state.inventory.products);
   const branches = useAppSelector((state) => state.inventory.branches);
@@ -85,18 +87,16 @@ export const AnalyticsView: React.FC = () => {
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-md">
         <h2 className="text-lg font-bold text-slate-100 flex items-center gap-2">
           <BarChart3 className="w-5 h-5 text-indigo-400" />
-          <span>Multi-Store Sales &amp; Inventory Analytics</span>
+          <span>{t.analyticsTitle}</span>
         </h2>
-        <p className="text-xs text-slate-400 mt-0.5">
-          Real-time enterprise metrics, inventory capital valuation, and channel velocity.
-        </p>
+        <p className="text-xs text-slate-400 mt-0.5">{t.analyticsSubtitle}</p>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 shadow-md">
           <div className="flex items-center justify-between text-slate-400 text-xs">
-            <span>Cumulative Gross Revenue</span>
+            <span>{t.cumulativeRevenue}</span>
             <DollarSign className="w-4 h-4 text-emerald-400" />
           </div>
           <div className="font-mono text-2xl font-bold text-white mt-1">
@@ -104,44 +104,47 @@ export const AnalyticsView: React.FC = () => {
           </div>
           <div className="text-[11px] text-emerald-400 flex items-center gap-1 mt-1">
             <TrendingUp className="w-3 h-3" />
-            <span>Across all active locations</span>
+            <span>{language === 'vi' ? 'Trên toàn bộ các chi nhánh' : 'Across all active locations'}</span>
           </div>
         </div>
 
         <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 shadow-md">
           <div className="flex items-center justify-between text-slate-400 text-xs">
-            <span>Average Basket Size</span>
+            <span>{t.averageBasketSize}</span>
             <TrendingUp className="w-4 h-4 text-indigo-400" />
           </div>
           <div className="font-mono text-2xl font-bold text-white mt-1">
             ${avgBasketSize.toFixed(2)}
           </div>
-          <div className="text-[11px] text-slate-400 mt-1">{totalOrders} completed checkouts</div>
+          <div className="text-[11px] text-slate-400 mt-1">
+            {totalOrders} {language === 'vi' ? 'giao dịch hoàn tất' : 'completed checkouts'}
+          </div>
         </div>
 
         <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 shadow-md">
           <div className="flex items-center justify-between text-slate-400 text-xs">
-            <span>Retail Stock Valuation</span>
+            <span>{t.retailStockValuation}</span>
             <Package className="w-4 h-4 text-amber-400" />
           </div>
           <div className="font-mono text-2xl font-bold text-white mt-1">
             ${totalRetailValuation.toFixed(2)}
           </div>
           <div className="text-[11px] text-slate-400 mt-1">
-            Cost base: ${totalCostValuation.toFixed(2)}
+            {language === 'vi' ? 'Giá vốn:' : 'Cost base:'} ${totalCostValuation.toFixed(2)}
           </div>
         </div>
 
         <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 shadow-md">
           <div className="flex items-center justify-between text-slate-400 text-xs">
-            <span>Unrealized Gross Margin</span>
+            <span>{t.unrealizedMargin}</span>
             <PieChart className="w-4 h-4 text-cyan-400" />
           </div>
           <div className="font-mono text-2xl font-bold text-emerald-400 mt-1">
             ${unrealizedMargin.toFixed(2)}
           </div>
           <div className="text-[11px] text-slate-400 mt-1">
-            Margin: {totalRetailValuation > 0 ? ((unrealizedMargin / totalRetailValuation) * 100).toFixed(1) : 0}%
+            {language === 'vi' ? 'Tỷ suất:' : 'Margin:'}{' '}
+            {totalRetailValuation > 0 ? ((unrealizedMargin / totalRetailValuation) * 100).toFixed(1) : 0}%
           </div>
         </div>
       </div>
@@ -152,7 +155,7 @@ export const AnalyticsView: React.FC = () => {
         <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 shadow-md space-y-3">
           <h3 className="font-bold text-sm text-slate-100 flex items-center gap-2">
             <Building className="w-4 h-4 text-indigo-400" />
-            <span>Store Performance &amp; On-Hand Units</span>
+            <span>{t.storePerformance}</span>
           </h3>
 
           <div className="space-y-3 pt-2">
@@ -171,8 +174,12 @@ export const AnalyticsView: React.FC = () => {
                 </div>
 
                 <div className="mt-2 flex items-center justify-between text-[11px] text-slate-400 font-mono">
-                  <span>{bs.orderCount} sales recorded</span>
-                  <span>{bs.stockCount} inventory units on hand</span>
+                  <span>
+                    {bs.orderCount} {language === 'vi' ? 'đơn hàng' : 'sales recorded'}
+                  </span>
+                  <span>
+                    {bs.stockCount} {language === 'vi' ? 'sản phẩm tồn kho' : 'inventory units on hand'}
+                  </span>
                 </div>
 
                 {/* Progress bar */}
@@ -190,19 +197,19 @@ export const AnalyticsView: React.FC = () => {
 
           {/* Payment tender split breakdown */}
           <div className="pt-3 border-t border-slate-800">
-            <h4 className="text-xs font-semibold text-slate-300 mb-2">Tender Distribution</h4>
+            <h4 className="text-xs font-semibold text-slate-300 mb-2">{t.tenderDistribution}</h4>
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Banknote className="w-4 h-4 text-emerald-400" />
-                  <span className="text-slate-300">Cash</span>
+                  <span className="text-slate-300">{t.cash}</span>
                 </div>
                 <span className="font-mono font-bold text-emerald-400">${cashTotal.toFixed(2)}</span>
               </div>
               <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <CreditCard className="w-4 h-4 text-indigo-400" />
-                  <span className="text-slate-300">Card</span>
+                  <span className="text-slate-300">{t.creditCard}</span>
                 </div>
                 <span className="font-mono font-bold text-indigo-400">${cardTotal.toFixed(2)}</span>
               </div>
@@ -214,12 +221,14 @@ export const AnalyticsView: React.FC = () => {
         <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 shadow-md space-y-3">
           <h3 className="font-bold text-sm text-slate-100 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-emerald-400" />
-            <span>Top Performing FMCG Products</span>
+            <span>{t.topProductsTitle}</span>
           </h3>
 
           <div className="space-y-2.5 pt-2">
             {topProducts.length === 0 ? (
-              <p className="text-xs text-slate-500 py-6 text-center">No sales registered yet.</p>
+              <p className="text-xs text-slate-500 py-6 text-center">
+                {language === 'vi' ? 'Chưa có đơn hàng nào được ghi nhận.' : 'No sales registered yet.'}
+              </p>
             ) : (
               topProducts.map((tp, idx) => (
                 <div
@@ -239,7 +248,9 @@ export const AnalyticsView: React.FC = () => {
                   </div>
 
                   <div className="text-right font-mono">
-                    <div className="font-bold text-slate-100">{tp.count} units sold</div>
+                    <div className="font-bold text-slate-100">
+                      {tp.count} {t.unitsSold}
+                    </div>
                     <div className="text-[11px] text-emerald-400">${tp.revenue.toFixed(2)}</div>
                   </div>
                 </div>

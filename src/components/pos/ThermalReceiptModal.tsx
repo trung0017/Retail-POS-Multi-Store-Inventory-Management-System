@@ -8,9 +8,11 @@ import {
 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { closeReceiptModal } from '../../store/slices/posSlice';
+import { useTranslation } from '../../i18n/useTranslation';
 
 export const ThermalReceiptModal: React.FC = () => {
   const dispatch = useAppDispatch();
+  const { t, language } = useTranslation();
   const isOpen = useAppSelector((state) => state.pos.isReceiptModalOpen);
   const order = useAppSelector((state) => state.pos.recentCompletedOrder);
   const branches = useAppSelector((state) => state.inventory.branches);
@@ -46,11 +48,11 @@ export const ThermalReceiptModal: React.FC = () => {
       `Tax: $${order.taxAmount.toFixed(2)}`,
       `GRAND TOTAL: $${order.grandTotal.toFixed(2)}`,
       `Paid by: ${order.paymentMethod.toUpperCase()}`,
-      '*** THANK YOU FOR SHOPPING! ***',
+      `*** ${t.receiptThankYou} ***`,
     ].join('\n');
 
     navigator.clipboard.writeText(lines).then(() => {
-      alert('Receipt plain text copied to clipboard!');
+      // plain notification
     }).catch(() => {});
   };
 
@@ -62,13 +64,13 @@ export const ThermalReceiptModal: React.FC = () => {
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-5 h-5 text-emerald-400" />
             <div>
-              <h3 className="font-bold text-sm text-slate-100">Transaction Complete</h3>
-              <p className="text-[11px] text-slate-400">80mm Thermal Receipt Ready</p>
+              <h3 className="font-bold text-sm text-slate-100">{t.transactionComplete}</h3>
+              <p className="text-[11px] text-slate-400">{t.receiptSubtitle}</p>
             </div>
           </div>
           <button
             onClick={() => dispatch(closeReceiptModal())}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -76,7 +78,7 @@ export const ThermalReceiptModal: React.FC = () => {
 
         {/* Scrollable Receipt Body Container */}
         <div className="flex-1 p-6 overflow-y-auto flex justify-center bg-slate-950/50">
-          {/* Authentic 80mm Thermal Receipt (width approx 300px - 320px) */}
+          {/* Authentic 80mm Thermal Receipt */}
           <div
             id="thermal-receipt-printable"
             className="w-[310px] bg-white text-slate-950 p-5 rounded-sm shadow-xl font-mono text-xs leading-relaxed border border-slate-300"
@@ -96,25 +98,25 @@ export const ThermalReceiptModal: React.FC = () => {
             {/* Transaction Metadata */}
             <div className="py-2.5 border-b border-dashed border-slate-400 text-[11px] space-y-0.5">
               <div className="flex justify-between">
-                <span className="text-slate-600">Order:</span>
+                <span className="text-slate-600">{language === 'vi' ? 'Số HĐ:' : 'Order:'}</span>
                 <span className="font-bold">{order.orderNumber}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-600">Date:</span>
+                <span className="text-slate-600">{language === 'vi' ? 'Ngày:' : 'Date:'}</span>
                 <span>{new Date(order.createdAt).toLocaleDateString()}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-600">Time:</span>
+                <span className="text-slate-600">{language === 'vi' ? 'Giờ:' : 'Time:'}</span>
                 <span>{new Date(order.createdAt).toLocaleTimeString()}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-600">Cashier:</span>
+                <span className="text-slate-600">{language === 'vi' ? 'Thu ngân:' : 'Cashier:'}</span>
                 <span>{order.cashierName}</span>
               </div>
               {order.offlineCreated && (
                 <div className="flex justify-between text-amber-700 font-bold">
-                  <span>Mode:</span>
-                  <span>OFFLINE REGISTER (LOCAL)</span>
+                  <span>{language === 'vi' ? 'Chế độ:' : 'Mode:'}</span>
+                  <span>{language === 'vi' ? 'OFFLINE (CỤC BỘ)' : 'OFFLINE REGISTER (LOCAL)'}</span>
                 </div>
               )}
             </div>
@@ -122,8 +124,8 @@ export const ThermalReceiptModal: React.FC = () => {
             {/* Line Items */}
             <div className="py-3 border-b border-dashed border-slate-400 space-y-2">
               <div className="flex justify-between font-bold text-[10px] text-slate-600 uppercase">
-                <span>Description / Qty</span>
-                <span>Amount</span>
+                <span>{language === 'vi' ? 'Tên SP / SL' : 'Description / Qty'}</span>
+                <span>{language === 'vi' ? 'Thành Tiền' : 'Amount'}</span>
               </div>
 
               {order.items.map((item, idx) => {
@@ -155,21 +157,21 @@ export const ThermalReceiptModal: React.FC = () => {
             {/* Totals Calculation */}
             <div className="py-2.5 border-b border-dashed border-slate-400 space-y-1 text-[11px]">
               <div className="flex justify-between">
-                <span>Subtotal:</span>
+                <span>{t.subtotal}:</span>
                 <span>${order.subtotal.toFixed(2)}</span>
               </div>
               {order.discountAmount > 0 && (
                 <div className="flex justify-between text-red-600">
-                  <span>Savings / Discount:</span>
+                  <span>{t.discountsApplied}:</span>
                   <span>-${order.discountAmount.toFixed(2)}</span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span>Sales Tax:</span>
+                <span>{t.salesTax}:</span>
                 <span>${order.taxAmount.toFixed(2)}</span>
               </div>
               <div className="pt-1.5 flex justify-between font-extrabold text-sm border-t border-slate-800">
-                <span>TOTAL PAID:</span>
+                <span>{t.totalPaid}:</span>
                 <span>${order.grandTotal.toFixed(2)}</span>
               </div>
             </div>
@@ -177,24 +179,24 @@ export const ThermalReceiptModal: React.FC = () => {
             {/* Tender Breakdown */}
             <div className="py-2 text-[10px] space-y-0.5 text-slate-700">
               <div className="flex justify-between">
-                <span>Payment Tender:</span>
+                <span>{t.paidBy}:</span>
                 <span className="font-bold uppercase">{order.paymentMethod}</span>
               </div>
               {order.paymentDetails.cashPaid > 0 && (
                 <div className="flex justify-between">
-                  <span>Cash Tendered:</span>
+                  <span>{t.cash}:</span>
                   <span>${order.paymentDetails.cashPaid.toFixed(2)}</span>
                 </div>
               )}
               {order.paymentDetails.cardPaid > 0 && (
                 <div className="flex justify-between">
-                  <span>Card Charged:</span>
+                  <span>{t.creditCard}:</span>
                   <span>${order.paymentDetails.cardPaid.toFixed(2)}</span>
                 </div>
               )}
               {order.paymentDetails.changeDue > 0 && (
                 <div className="flex justify-between font-bold text-slate-900">
-                  <span>Change Given:</span>
+                  <span>{t.changeDue}:</span>
                   <span>${order.paymentDetails.changeDue.toFixed(2)}</span>
                 </div>
               )}
@@ -208,7 +210,6 @@ export const ThermalReceiptModal: React.FC = () => {
 
             {/* Barcode & Footer Greeting */}
             <div className="pt-4 text-center space-y-2">
-              {/* Simulated barcode */}
               <div className="flex flex-col items-center">
                 <div className="font-mono text-xs tracking-[5px] font-bold">
                   ||| | || |||| | ||||| |||
@@ -218,8 +219,7 @@ export const ThermalReceiptModal: React.FC = () => {
                 </span>
               </div>
               <div className="text-[10px] text-slate-600 italic">
-                Thank you for your business!<br />
-                Please retain receipt for 30-day exchange.
+                {t.receiptThankYou}
               </div>
             </div>
           </div>
@@ -233,14 +233,14 @@ export const ThermalReceiptModal: React.FC = () => {
               className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
             >
               <Printer className="w-4 h-4" />
-              <span>Print 80mm</span>
+              <span>{t.print80mm}</span>
             </button>
             <button
               onClick={handleCopyReceiptText}
-              className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg border border-slate-700 transition-colors cursor-pointer"
             >
               <Copy className="w-3.5 h-3.5" />
-              <span>Copy Text</span>
+              <span>{t.copyText}</span>
             </button>
           </div>
 
@@ -249,7 +249,7 @@ export const ThermalReceiptModal: React.FC = () => {
             className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow-sm transition-colors cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>Next Customer</span>
+            <span>{t.nextCustomer}</span>
           </button>
         </div>
       </div>

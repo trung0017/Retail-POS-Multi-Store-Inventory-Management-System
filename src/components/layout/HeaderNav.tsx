@@ -11,13 +11,16 @@ import {
   User,
   Clock,
   Warehouse,
+  Globe,
 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store';
 import {
   setActiveBranch,
   toggleNetworkStatus,
+  setLanguage,
 } from '../../store/slices/posSlice';
 import { startSyncing, finishSyncingSuccess } from '../../store/slices/ordersSlice';
+import { useTranslation } from '../../i18n/useTranslation';
 
 interface HeaderNavProps {
   activeTab: 'pos' | 'inventory' | 'orders' | 'shift' | 'analytics';
@@ -26,6 +29,7 @@ interface HeaderNavProps {
 
 export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab }) => {
   const dispatch = useAppDispatch();
+  const { t, language } = useTranslation();
   const branches = useAppSelector((state) => state.inventory.branches);
   const activeBranchId = useAppSelector((state) => state.pos.activeBranchId);
   const currentCashier = useAppSelector((state) => state.pos.currentCashier);
@@ -63,12 +67,12 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-bold text-base tracking-tight text-white">AURA POS</span>
+                <span className="font-bold text-base tracking-tight text-white">{t.appTitle}</span>
                 <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800">
                   v2.4 Core
                 </span>
               </div>
-              <p className="text-xs text-slate-400">Retail & Multi-Branch Engine</p>
+              <p className="text-xs text-slate-400">{t.appSubtitle}</p>
             </div>
           </div>
 
@@ -83,7 +87,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
               }`}
             >
               <Store className="w-4 h-4" />
-              <span>Register</span>
+              <span>{t.tabRegister}</span>
             </button>
 
             <button
@@ -95,7 +99,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
               }`}
             >
               <Layers className="w-4 h-4" />
-              <span>Multi-Branch Stock</span>
+              <span>{t.tabInventory}</span>
             </button>
 
             <button
@@ -107,7 +111,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
               }`}
             >
               <Receipt className="w-4 h-4" />
-              <span>Orders & Receipts</span>
+              <span>{t.tabOrders}</span>
             </button>
 
             <button
@@ -119,7 +123,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
               }`}
             >
               <FileSpreadsheet className="w-4 h-4" />
-              <span>Z-Report & Shift</span>
+              <span>{t.tabShift}</span>
             </button>
 
             <button
@@ -131,13 +135,44 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
               }`}
             >
               <BarChart3 className="w-4 h-4" />
-              <span>Analytics</span>
+              <span>{t.tabAnalytics}</span>
             </button>
           </nav>
         </div>
 
-        {/* Right: Branch Selector, Network Status, Cashier, Clock */}
-        <div className="flex items-center gap-3">
+        {/* Right: Language Switcher, Branch Selector, Network Status, Cashier, Clock */}
+        <div className="flex items-center gap-2.5">
+          {/* Language Switcher (EN / VI) */}
+          <div className="flex items-center bg-slate-950 p-1 rounded-lg border border-slate-800 shadow-inner">
+            <Globe className="w-3.5 h-3.5 text-indigo-400 ml-1.5 mr-1" />
+            <div className="flex items-center gap-0.5">
+              <button
+                type="button"
+                onClick={() => dispatch(setLanguage('en'))}
+                title="Switch to English"
+                className={`px-2 py-1 rounded text-xs font-bold transition-all cursor-pointer ${
+                  language === 'en'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                }`}
+              >
+                EN
+              </button>
+              <button
+                type="button"
+                onClick={() => dispatch(setLanguage('vi'))}
+                title="Chuyển sang Tiếng Việt"
+                className={`px-2 py-1 rounded text-xs font-bold transition-all cursor-pointer ${
+                  language === 'vi'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                }`}
+              >
+                VI
+              </button>
+            </div>
+          </div>
+
           {/* Active Branch Selector */}
           <div className="flex items-center gap-2 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800">
             {activeBranch.isWarehouse ? (
@@ -147,7 +182,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
             )}
             <div className="text-left">
               <label htmlFor="branch-select" className="text-[10px] text-slate-500 block uppercase font-semibold">
-                Store Location
+                {t.storeLocation}
               </label>
               <select
                 id="branch-select"
@@ -179,13 +214,13 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
                 <>
                   <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400/80"></span>
                   <Wifi className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Online</span>
+                  <span className="hidden sm:inline">{t.online}</span>
                 </>
               ) : (
                 <>
                   <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
                   <WifiOff className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Offline Mode</span>
+                  <span className="hidden sm:inline">{t.offlineMode}</span>
                 </>
               )}
             </button>
@@ -203,7 +238,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
                 className="flex items-center gap-1.5 px-2.5 py-1.5 bg-indigo-950 border border-indigo-700/70 text-indigo-200 rounded-lg text-xs font-medium hover:bg-indigo-900 transition-colors disabled:opacity-50"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
-                <span>Sync ({offlineQueue.length})</span>
+                <span>{t.sync} ({offlineQueue.length})</span>
               </button>
             )}
           </div>
@@ -214,7 +249,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
               <User className="w-3.5 h-3.5" />
             </div>
             <div className="text-left">
-              <span className="text-[10px] text-slate-400 block leading-tight">Cashier</span>
+              <span className="text-[10px] text-slate-400 block leading-tight">{t.cashier}</span>
               <span className="text-xs font-medium text-slate-200 block leading-tight truncate max-w-[110px]">
                 {currentCashier.split(' ')[0]}
               </span>
@@ -238,7 +273,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
           }`}
         >
           <Store className="w-4 h-4" />
-          <span>Register</span>
+          <span>{t.tabRegister}</span>
         </button>
         <button
           onClick={() => setActiveTab('inventory')}
@@ -247,7 +282,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
           }`}
         >
           <Layers className="w-4 h-4" />
-          <span>Inventory</span>
+          <span>{t.tabInventory}</span>
         </button>
         <button
           onClick={() => setActiveTab('orders')}
@@ -256,7 +291,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
           }`}
         >
           <Receipt className="w-4 h-4" />
-          <span>Orders</span>
+          <span>{t.tabOrders}</span>
         </button>
         <button
           onClick={() => setActiveTab('shift')}
@@ -265,7 +300,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
           }`}
         >
           <FileSpreadsheet className="w-4 h-4" />
-          <span>Z-Report</span>
+          <span>{t.tabShift}</span>
         </button>
         <button
           onClick={() => setActiveTab('analytics')}
@@ -274,7 +309,7 @@ export const HeaderNav: React.FC<HeaderNavProps> = ({ activeTab, setActiveTab })
           }`}
         >
           <BarChart3 className="w-4 h-4" />
-          <span>Analytics</span>
+          <span>{t.tabAnalytics}</span>
         </button>
       </div>
     </header>
