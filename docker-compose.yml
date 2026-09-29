@@ -1,0 +1,18 @@
+services:
+  retail-pos:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aura-retail-pos-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

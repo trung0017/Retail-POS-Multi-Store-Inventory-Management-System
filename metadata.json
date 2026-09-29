@@ -1,0 +1,8 @@
+{
+  "name": "Retail POS & Multi-Store Inventory Management System",
+  "description": "Production-ready Retail POS and multi-branch inventory management system with barcode engine, offline-resilient Redux store, stock transfers, and daily Z-reports.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
